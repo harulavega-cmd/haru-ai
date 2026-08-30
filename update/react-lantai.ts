@@ -102,7 +102,7 @@ type MarketLike = {
 };
 
 type InboxLike = { kira?: AgentLike; peti?: AgentLike };
- type CalLike = { doma?: AgentLike };
+type CalLike = { doma?: AgentLike };
 
 export function mergeOps<T extends DashLike>(
   fallback: T,

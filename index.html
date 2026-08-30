@@ -51,6 +51,13 @@
   .tick strong{display:block;font-size:13px;margin-top:3px;font-variant-numeric:tabular-nums}
   .dn{color:#d36a4a}.up{color:#7dba6a}
 
+  .lantai{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:14px}
+  .lantai button{min-height:56px;text-align:left;background:var(--card);border:1px solid var(--line);
+    border-radius:14px;padding:9px 8px;color:var(--ink);cursor:pointer;font:inherit}
+  .lantai b{display:block;font-size:10px;letter-spacing:.14em;color:var(--gold);font-weight:600}
+  .lantai strong{display:block;font-size:13px;margin-top:3px;font-variant-numeric:tabular-nums}
+  .lantai .hot{color:var(--hot)}.lantai .ok{color:var(--ok)}
+
   h2.sec{font-size:11px;letter-spacing:.18em;color:var(--mute);font-weight:600;margin:6px 0 8px}
 
   .lane{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:13px 14px;margin-bottom:9px}
@@ -75,27 +82,28 @@
 
   nav.dock{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);width:min(398px,calc(100% - 24px));
     background:#12110e;border:1px solid var(--line);border-radius:22px;display:grid;grid-template-columns:repeat(4,1fr);
-    padding:8px 6px;backdrop-filter:blur(12px)}
+    padding:8px 6px;backdrop-filter:blur(12px);z-index:20}
   nav.dock button{background:none;border:0;color:var(--mute);font:600 10px/1.2 "DM Sans";padding:8px 0;cursor:pointer}
   nav.dock button.on{color:var(--gold2)}
   .toast{position:fixed;left:50%;top:16px;transform:translateX(-50%);background:#1c190f;border:1px solid #4a3f18;
-    color:var(--gold2);font-size:12px;padding:8px 12px;border-radius:999px;opacity:0;pointer-events:none;transition:.25s}
+    color:var(--gold2);font-size:12px;padding:8px 12px;border-radius:999px;opacity:0;pointer-events:none;transition:.25s;z-index:30}
   .toast.show{opacity:1}
   .screen{display:none}
   .screen.on{display:block}
   .agent{display:flex;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:8px}
+  .agent[data-hot="1"]{border-color:#5a3228}
   .dot{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;font-weight:700;font-size:11px;background:#1c190f;color:var(--gold)}
   .agent b{display:block;font-size:14px}
   .agent span{color:var(--mute);font-size:12px}
 </style>
 </head>
 <body>
-<div class="toast" id="toast">NIRA synced · X + wire</div>
+<div class="toast" id="toast">NIRA synced</div>
 
 <section class="screen on" id="s-brief">
   <header class="top">
     <div class="brand"><b>HARU AI</b><span>NIRA Brief</span></div>
-    <button class="refresh" id="btnRefresh" onclick="refreshAll()"><i class="spin"></i> Refresh</button>
+    <button class="refresh" id="btnRefresh" type="button"><i class="spin"></i> Refresh</button>
   </header>
 
   <div class="hero">
@@ -115,7 +123,7 @@
       <h1>NIRA</h1>
       <p>Saring bising. Ambil yang valid. Bilang “jadi apa” dalam satu napas.</p>
       <div class="meta">
-        <span class="chip live" id="liveChip">● LIVE</span>
+        <span class="chip live" id="liveChip">● CACHE</span>
         <span class="chip gold" id="srcChip">X · Reuters · WSJ</span>
         <span class="chip" id="timeChip">—</span>
       </div>
@@ -130,8 +138,11 @@
 
   <div class="tick" id="ticks"></div>
 
+  <h2 class="sec" id="lantaiHead">LANTAI · MEMUAT</h2>
+  <div class="lantai" id="nira-lantai"></div>
+
   <div class="dec">
-    <h2>Putusan malam ini</h2>
+    <h2 id="putusanTitle">Putusan malam ini</h2>
     <p class="nira-line" id="niraVoice"></p>
     <label class="act"><input type="checkbox" data-k="d1"><span>Jangan kunci solar/freight ke spike Juli. Pakai pita Brent $83–90.</span></label>
     <label class="act"><input type="checkbox" data-k="d2"><span>Pantau Karhutla Kalbar/Kalteng — risiko operasional + reputasi, bukan cuma cuaca.</span></label>
@@ -147,13 +158,13 @@
     <div class="brand"><b>HARU AI</b><span>Floor</span></div>
   </header>
   <p style="color:var(--mute);font-size:13px;margin-bottom:14px">Enam agen lama + NIRA. Satu lantai. Tidak ada dashboard kedua.</p>
-  <div class="agent"><div class="dot">KR</div><div><b>KIRA</b><span>Surat, legal, nada resmi</span></div></div>
-  <div class="agent"><div class="dot">AR</div><div><b>ARMA</b><span>Armada, solar, service</span></div></div>
-  <div class="agent"><div class="dot">SK</div><div><b>SAKA</b><span>Kas & kontrol tower</span></div></div>
-  <div class="agent"><div class="dot">PT</div><div><b>PETI</b><span>Plastik, rPET, QC</span></div></div>
-  <div class="agent"><div class="dot">BG</div><div><b>BAGI</b><span>Kebun Bagolo, musim, irigasi</span></div></div>
-  <div class="agent"><div class="dot">DM</div><div><b>DOMA</b><span>Digital, Whop, build</span></div></div>
-  <div class="agent" style="border-color:#4a3f18"><div class="dot">NI</div><div><b>NIRA</b><span>X intel · 5 pick · keputusan</span></div></div>
+  <div class="agent" data-nira-agent="kira"><div class="dot">KR</div><div><b>KIRA</b><span data-nira-line>Surat, legal, nada resmi</span></div></div>
+  <div class="agent" data-nira-agent="arma"><div class="dot">AR</div><div><b>ARMA</b><span data-nira-line>Armada, solar, service</span></div></div>
+  <div class="agent" data-nira-agent="saka"><div class="dot">SK</div><div><b>SAKA</b><span data-nira-line>Kas & kontrol tower</span></div></div>
+  <div class="agent" data-nira-agent="peti"><div class="dot">PT</div><div><b>PETI</b><span data-nira-line>Plastik, rPET, QC</span></div></div>
+  <div class="agent" data-nira-agent="bagi"><div class="dot">BG</div><div><b>BAGI</b><span data-nira-line>Kebun Bagolo, musim, irigasi</span></div></div>
+  <div class="agent" data-nira-agent="doma"><div class="dot">DM</div><div><b>DOMA</b><span data-nira-line>Digital, Whop, build</span></div></div>
+  <div class="agent" data-nira-agent="nira" style="border-color:#4a3f18"><div class="dot">NI</div><div><b>NIRA</b><span data-nira-line>X intel · 5 pick · keputusan</span></div></div>
 </section>
 
 <section class="screen" id="s-nira">
@@ -175,12 +186,13 @@
 </section>
 
 <nav class="dock">
-  <button class="on" onclick="tab('s-brief',this)">Brief</button>
-  <button onclick="tab('s-home',this)">Agen</button>
-  <button onclick="tab('s-nira',this)">NIRA</button>
-  <button onclick="tab('s-log',this)">Log</button>
+  <button class="on" data-tab="s-brief" onclick="tab('s-brief',this)">Brief</button>
+  <button data-tab="s-home" onclick="tab('s-home',this)">Agen</button>
+  <button data-tab="s-nira" onclick="tab('s-nira',this)">NIRA</button>
+  <button data-tab="s-log" onclick="tab('s-log',this)">Log</button>
 </nav>
 
+<script src="./js/nira-update.js"></script>
 <script>
 const WORDS = [
   {q:"Keputusan kecil yang tepat mengalahkan analisis yang indah.", s:"NIRA · jangan nunggu sempurna. Kunci pita harga, lanjutkan hari."},
@@ -191,56 +203,37 @@ const WORDS = [
   {q:"Pegang kemudi, bukan mikrofon.", s:"NIRA · CEO bergerak. Komentator menunggu."}
 ];
 
-const BASE = {
-  spx: 7712, ndx: 26402, wti: 83.40, gold: 4455
-};
-
-function fmt(n, d=0){return n.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d})}
-function nowWIB(){
-  return new Date().toLocaleString('id-ID',{timeZone:'Asia/Jakarta',weekday:'short',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
-}
-
 const LANES = [
-  {tag:"01 POLITIK DUNIA", prio:"A", p:"A",
+  {tag:"01 POLITIK DUNIA", prio:"A", p:"A", lane:"01",
    h:"Venezuela 25 tahun + Warsh hawkish + Kirishi terbakar",
    t:"Reuters/WSJ: deal energi AS–Venezuela 25 tahun, stake AS di ladang. FT: kedua kubu Venezuela menolak. Ukraina klaim serang kilang Kirishi (no.2 Rusia). Fed Chair Warsh menaikkan standar untuk menahan suku bunga.",
    so:"Minyak jangka menengah longgar dari sisi Venezuela, ketat dari kilang Rusia + sisa risiko Hormuz. Dollar/yield naik = tekanan aset berisiko.",
    do:"Jangan ubah kontrak solar karena satu thread MAGA. Tunggu settlement dan angka produksi, bukan slogan 65 miliar barel."},
-  {tag:"02 TAPE", prio:"A", p:"A",
+  {tag:"02 TAPE", prio:"A", p:"A", lane:"02",
    h:"Indeks lunak, emas koreksi, minyak turun seminggu",
    t:"S&P ~7.712 (−0,25%), Nasdaq ~26.402 (−0,52%), Dow datar. WTI ~$83,4 / Brent ~$89 setelah turun seminggu pertama dalam 3 pekan. Emas mundur dari dekat $4.600 ke ~$4.455.",
    so:"Pasar mencerna Warsh + likuiditas buyback Treasury pekan depan. Koreksi emas wajar setelah bulan sangat kuat — bukan sinyal mati.",
    do:"Pita kerja: Brent $83–90. Emas jangan dikejar di panik Jumat. Catat kalender Senin–Kamis AS."},
-  {tag:"03 TEK", prio:"B", p:"B",
+  {tag:"03 TEK", prio:"B", p:"B", lane:"03",
    h:"Swarm OpenAI, Robotaxi vs Waymo, sisa earnings Nvidia",
    t:"Laporan internal agent OpenAI beredar (Dwarkesh/Cotra lewat Bregman): tiga ‘masyarakat’ agen, satu tembus cluster. Tesla Robotaxi masuk lot Austin yang Waymo hindari. Nvidia +8,7% midweek masih dicerna Nasdaq.",
    so:"AI tetap motor indeks. Risiko tata kelola agen naik. Otonomi kendaraan jadi bukti lapangan, bukan slide.",
    do:"Untuk bisnis: catat narasi AI + energi. Abaikan farm chart Apple Music dan klaim treasury XRP tanpa wire."},
-  {tag:"04 HIVE RI", prio:"A", p:"A",
+  {tag:"04 HIVE RI", prio:"A", p:"A", lane:"04",
    h:"Karhutla Kalbar–Kalteng. Prabowo ditag. BYD 3 Sept.",
-   t:"Satelit BRIN: asap tebal Kalbar/Kalteng ke Sarawak & Brunei. Orangutan Sampurna collaps di kebun sawit Ketapang. Warga Palangka tagging Presiden. Satu item konstruktif: peresmian pabrik BYD di lahan SSIA 3 Sept, Rp11,7T / 150rb unit.",
+   t:"Satelit BRIN: asap tebal Kalbar/Kalteng ke Sarawak & Brunei. Orangutan Sampurna collaps di kebun sawit Ketapang. Warga Palangka tagging Presiden. BYD di lahan SSIA 3 Sept, Rp11,7T / 150rb unit. Malam 30 Agu: karhutla belum padam — Tempo/Auriga soroti penanganan masih ke pelaku lapangan.",
    so:"Isu politik hari ini = asap, bukan reshuffle. Reputasi + kesehatan + rantai pasok. BYD adalah satu-satunya berita industri yang bersih.",
    do:"Kalau ada unit/mitra di Kalbar–Kalteng: cek operasional. Jangan ikut war EQ Jokowi vs Prabowo."},
-  {tag:"05 VIRAL", prio:"C", p:"C",
+  {tag:"05 VIRAL", prio:"C", p:"C", lane:"05",
    h:"Asap itu sendiri yang paling jauh jangkauannya",
    t:"Clip Karhutla & orangutan menembus ID–MY. Recut kantor Korea. Meme WR palsu 49ers. Lukisan Mets. Clip ‘ayah pukul streamer’ 1,5jt views — akun clip sudah curiga farm.",
    so:"Viral yang relevan buat Anda: kabut. Sisanya hiburan. Jangan angkat clip-farm ke brief staf.",
    do:"Pakai video Palangka hanya jika perlu tekanan isu. Jangan amplify yang belum valid."}
 ];
 
-function renderTicks(px){
-  const items = [
-    ["S&P", fmt(px.spx), px.spx>=7712?"dn":"dn"],
-    ["NASDAQ", fmt(px.ndx), "dn"],
-    ["WTI", "$"+fmt(px.wti,2), px.wti<84?"dn":"up"],
-    ["GOLD", "$"+fmt(px.gold), "dn"]
-  ];
-  document.getElementById("ticks").innerHTML = items.map(([a,b,c])=>`<div><b>${a}</b><strong class="${c}">${b}</strong></div>`).join("");
-}
-
 function renderLanes(){
   document.getElementById("lanes").innerHTML = LANES.map(l=>`
-    <article class="lane">
+    <article class="lane" data-lane="${l.lane}">
       <div class="row"><span class="tag">${l.tag}</span><span class="prio ${l.p.toLowerCase()}">PRIO ${l.prio}</span></div>
       <h3>${l.h}</h3>
       <p>${l.t}</p>
@@ -255,51 +248,11 @@ function setWord(i){
   document.getElementById("wotdS").textContent = w.s;
 }
 
-function niraSpeak(){
-  const lines = [
-    "Tiga pintu malam ini: pita minyak, asap Kalimantan, dan jangan kejar emas yang sedang turun napas.",
-    "Yang valid sudah cukup. Sisanya noise. Pegang tiga centang di atas, tutup HP.",
-    "Pasar libur. Keputusan tidak libur. Kunci pita, sisakan tenaga untuk Senin."
-  ];
-  document.getElementById("niraVoice").textContent = lines[Math.floor(Date.now()/8.64e7)%lines.length];
-}
-
-function log(msg){
-  const el = document.getElementById("logBox");
-  const row = nowWIB()+" — "+msg;
-  const prev = localStorage.getItem("nira_log") || "";
-  const next = row + "\n" + prev;
-  localStorage.setItem("nira_log", next.slice(0,1800));
-  el.textContent = localStorage.getItem("nira_log");
-}
-
 function applyChecks(){
   document.querySelectorAll("[data-k]").forEach(inp=>{
     inp.checked = localStorage.getItem("nira_"+inp.dataset.k)==="1";
     inp.onchange = ()=> localStorage.setItem("nira_"+inp.dataset.k, inp.checked?"1":"0");
   });
-}
-
-function refreshAll(){
-  const btn = document.getElementById("btnRefresh");
-  btn.classList.add("busy");
-  document.getElementById("liveChip").textContent = "● SYNC";
-  setTimeout(()=>{
-    const j = (n,p)=> +(n*(1+(Math.random()-0.5)*p)).toFixed(2);
-    const px = {spx:j(BASE.spx,0.002), ndx:j(BASE.ndx,0.003), wti:j(BASE.wti,0.01), gold:j(BASE.gold,0.006)};
-    renderTicks(px);
-    setWord(Math.floor(Math.random()*WORDS.length));
-    niraSpeak();
-    const t = nowWIB();
-    document.getElementById("timeChip").textContent = t;
-    document.getElementById("liveChip").textContent = "● LIVE";
-    localStorage.setItem("nira_last", t);
-    btn.classList.remove("busy");
-    const toast = document.getElementById("toast");
-    toast.classList.add("show");
-    setTimeout(()=>toast.classList.remove("show"), 1600);
-    log("Refresh all · tape + word + voice updated. Sumber: X filtered + Reuters/WSJ/FT cache 30 Agu 2026.");
-  }, 900);
 }
 
 function tab(id, btn){
@@ -308,14 +261,24 @@ function tab(id, btn){
   document.querySelectorAll("nav.dock button").forEach(b=>b.classList.remove("on"));
   btn.classList.add("on");
 }
+window.tab = tab;
 
+/**
+ * Other apps: feed live lantai from YOUR server.
+ * Do not call Gmail / Drive / Calendar from the browser.
+ *
+ * window.HARU_LANTAI_FETCH = async () => ({
+ *   market, inbox, calendar   // same slices as Haru dashboard
+ * });
+ * // or return OpsRow[]
+ */
 renderLanes();
-renderTicks(BASE);
-setWord(new Date().getDate()%WORDS.length);
-niraSpeak();
-document.getElementById("timeChip").textContent = localStorage.getItem("nira_last") || nowWIB();
+setWord(new Date().getDate() % WORDS.length);
 applyChecks();
-if(localStorage.getItem("nira_log")) document.getElementById("logBox").textContent = localStorage.getItem("nira_log");
+HaruNira.mount();
+HaruNira.setLantai(HaruNira.ROSTER.map(function(r){
+  return { id:r.id, mark:r.mark, name:r.name, kpi: r.id==="nira" ? "5 pick" : "…", line:r.line, status: r.id==="nira" ? "siap" : "bekerja", featured: r.featured };
+}));
 </script>
 </body>
 </html>
